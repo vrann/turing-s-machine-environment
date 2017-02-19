@@ -2,7 +2,10 @@ from tkinter import *
 import inspect
 font_family = 'Lucida Grande'
 font_family = 'Menlo'
+gray = '#97ACB3'
+lightgray = '#f6f6f6'
 canvas_size = 400
+start = None
 
 def _sign(val):
     "signum(val)"
@@ -14,9 +17,23 @@ def _sign(val):
         sign = -1
     return sign
 
+def onclick_handler(event):
+    global start
+    start = (event.x, event.y)
+    print(start)
+
+def onrelease_handler(event):
+    global start
+    if start is not None:
+        x = start[0]
+        y = start[1]
+        event.widget.create_rectangle(x, y, event.x, event.y)
+        start = None
+    
+
 class MachineGUI:
     def __init__(self):
-        self.top = Tk()
+        self.top = Tk(screenName='The Turing\'s machine', baseName='Machine', className=' Visual Turing',)
         self.app = 'preparation/app.turing'
         self.machine = Machine(self.top, 'white', number=60, width=420, height=210, bg='darkgreen', bd=0, highlightthickness=0)
         self.machine.pack()
@@ -35,6 +52,8 @@ class MachineGUI:
                       command=self.machine.strip.R,
                       font=(font_family, 12, 'normal'))
         rightButton.pack(side='right')
+        self.machine.bind("<Button-1>", onclick_handler)
+        self.machine.bind("<ButtonRelease-1>", onrelease_handler)
 
 
 class Machine(Canvas):
@@ -48,6 +67,10 @@ class Machine(Canvas):
         self.compiled = None
         self.code = None
         self.state = 'q1'
+        self.stateT = self.create_text(210, 164, text=self.state,
+                                       font=(font_family, 30), tag='machineState',
+                                       fill=gray,
+                                       activefill=lightgray)
 
     def open(self, source):
         file = open(source, 'r')
@@ -73,8 +96,10 @@ class Machine(Canvas):
 
     def action(self):
         work = True
+        # 210, 170
         action = self.compiled[(self.state, self.strip.current.value)]
         self.state = action[0]
+        self.itemconfig(self.stateT, text=self.state)
         value = action[1]
         self.strip.valueChange(value)
         move = action[2]
@@ -115,17 +140,38 @@ class Strip:
         self.machine.itemconfig(text_id, text=str(value))
         self.machine.itemconfig(rect_id, fill='gray')
 
+    def createPlaceHere(self, left, right, value):
+        def makePlaceAtCenter():
+            print('making rectangle here')
+            returnPlace1 = self.machine.create_rectangle(175,70,245,140, fill='cyan', tag='place'),                    
+            returnPlace2 = self.machine.create_text(210, 105, text=str(value), font=(font_family, 34), tag='place')
+            return returnPlace1, returnPlace2
+        
+        if left == right == None:
+            place = Place(self, value, None, None, 'first')
+        elif right != None:
+            place = Place(self, value, None, right)
+            right.left = place
+        elif left != None:
+            place = Place(self, value, left, None)
+            left.right = place
+        self.current = place
+        place.visual = makePlaceAtCenter()
+        print('place has been made', place.value, place.left, place.right)
+        return place
+
     def createNewPlaceR(self, value, left):
         def makePlaceAtCenter():
-            return (self.machine.create_rectangle(175,70,245,140, fill='cyan', tag='place'),                    
-                    self.machine.create_text(210, 105, text=str(value), font=(font_family, 34), tag='place'))
-
+            print('making rectangle l')
+            returnPlace1 = self.machine.create_rectangle(175,70,245,140, fill='cyan', tag='place'),                    
+            returnPlace2 = self.machine.create_text(210, 105, text=str(value), font=(font_family, 34), tag='place')
+            return returnPlace1, returnPlace2
+        
         place = Place(self, value, left, None)
         if left == None:
             place.visual = makePlaceAtCenter()
-        elif left == self.current:
-            self.current.right = place
-            self.moveR()
+        else:
+            left.right = place
             place.visual = makePlaceAtCenter()
         self.current = place
         #print('place has been made',place.value, place.left, place.right)
@@ -133,18 +179,25 @@ class Strip:
 
     def createNewPlaceL(self, value, right):
         def makePlaceAtCenter():
-            return (self.machine.create_rectangle(175,70,245,140, fill='cyan', tag='place'),                    
-                    self.machine.create_text(210, 105, text=str(value), font=(font_family, 34), tag='place'))
-
+            print('making rectangle l')
+            returnPlace1 = self.machine.create_rectangle(175,70,245,140, fill='cyan', tag='place'),                    
+            returnPlace2 = self.machine.create_text(210, 105, text=str(value), font=(font_family, 34), tag='place')
+            return returnPlace1, returnPlace2
+        
         place = Place(self, value, None, right)
         if right == None:
             place.visual = makePlaceAtCenter()
-        elif right == self.current:
-            self.current.left = place
-            self.moveL()
+        else:
+            right.left = place
             place.visual = makePlaceAtCenter()
         self.current = place
         print('place has been made',place.value, place.left, place.right)
+        return place
+
+    def createFirstPlace(self, value):
+        place = Place(self, value, None, None)
+        print('created first place        current = self.createFirstPlace(1)')
+
         return place
 
     def moveL(self):
@@ -156,33 +209,42 @@ class Strip:
         self.current = self.current.right
 
     def L(self):
-        memo = self.current
-        self.moveL()
-        if self.current == None:
-            newplace = self.createNewPlaceL(0, memo)
-            self.current = newplace
+        if self.machine.moved.get() == 1:
+            memo = self.current
+            self.moveL()
+            if self.current == None:
+                newplace = self.createNewPlaceL(0, memo)
+                self.current = newplace
+        else:
+            print('hold your HORSES right there for a second')
 
     def R(self):
-        memo = self.current
-        self.moveR()
-        if self.current == None:
-            newplace = self.createNewPlaceR(0, memo)
-            self.current = newplace
+        if self.machine.moved.get() == 1:
+            memo = self.current
+            self.moveR()
+            if self.current == None:
+                newplace = self.createNewPlaceR(0, memo)
+                self.current = newplace
+        else:
+            print('hold your HORSES right there for a second')
 
     def S(self):
         print('Machine encountered S')
 
     def createStrip(self, inputNumbers):
         ''' Input might look like this: [63, 86, 12]'''
-        current = self.createNewPlaceR(1, None)
+        current = self.createPlaceHere(None, None, 0)
         left = current
         for n in inputNumbers:
             for i in range(n+1):
-                newPlace = self.createNewPlaceR(1, left)
+                self.moveR()
+                newPlace = self.createPlaceHere(left, None, 1)
                 left = newPlace
             #making 0
-            emptyPlace = self.createNewPlaceR(0, left)
+            self.moveR()
+            emptyPlace = self.createPlaceHere(left, None, 0)
             left = emptyPlace
+        self.current = emptyPlace
 
     def moveCarefuly(self, thing, dx, dy):
         coordsX, coordsY, m1, m2 = self.machine.coords(thing)
@@ -228,12 +290,15 @@ class Strip:
 
 
 class Place:
-    def __init__(self, strip, value, left, right):
+    def __init__(self, strip, value, left, right, *args):
         self.strip = strip
         self.value = value
         self.left = left
         self.right = right
         self.visual = None
+        if args:
+            self.note = args[0]
+            print(args)
         
     def __str__(self):
         return str(self.value)
@@ -247,3 +312,4 @@ m.machine.open('app.turing')
 for i in range(12):
     m.machine.strip.L()
 m.machine.act()
+mainloop()
