@@ -1,10 +1,4 @@
-(cond, 0) -> (cond2, 1, L) moves back
-  (  cond  ,  0  )  ->  (  cond2  ,  1  , L  )  mo ves back
-(cond,0)->(cond2,1,L) moves back
-( cond, 0)  ->  (cond2 , 1 , L) moves back
-(cond,0)->(cond2,1,L)moves back
-(cond, 0) -> (cond2, 1, L) moves back
-(cond, 0) -> (cond2, 1, L) moves back
+
 (q1, 1) -> (q1, 1, R)
 (q1, 0) -> (q2, 1, R)
 (q2, 1) -> (q2, 0, R)

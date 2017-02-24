@@ -1,42 +1,23 @@
+# clear and consice
+# imorting modules
 from tkinter import *
 import inspect
-font_family = 'Lucida Grande'
+# design
+font_family = 'Lucida Grande' # app typeface
 font_family = 'Menlo'
+# define some colors
 gray = '#97ACB3'
 lightgray = '#f6f6f6'
-canvas_size = 400
-start = None
-
-def _sign(val):
-    "signum(val)"
-    if val > 0:
-        sign = 1
-    elif val == 0:
-        sign = 0
-    else:
-        sign = -1
-    return sign
-
-def onclick_handler(event):
-    global start
-    start = (event.x, event.y)
-    print(start)
-
-def onrelease_handler(event):
-    global start
-    if start is not None:
-        x = start[0]
-        y = start[1]
-        event.widget.create_rectangle(x, y, event.x, event.y)
-        start = None
-    
+canvas_size = 400 # size of canvas area
 
 class MachineGUI:
     def __init__(self):
-        self.top = Tk(screenName='The Turing\'s machine', baseName='Machine', className=' Visual Turing',)
-        self.app = 'preparation/app.turing'
-        self.machine = Machine(self.top, 'white', number=60, width=420, height=210, bg='darkgreen', bd=0, highlightthickness=0)
+        # make window
+        self.top = Tk(screenName='The Turing\'s machine',baseName='Machine', className=' Visual Turing',)
+        # create canvas
+        self.machine = Machine(self.top, 'white', width=420, height=210, bg='darkgreen', bd=0, highlightthickness=0)
         self.machine.pack()
+        # make buttons and labels
         self._make_controls()
 
     def _make_controls(self):
@@ -45,11 +26,11 @@ class MachineGUI:
         label = Label(self.top, text = 'Industrial version', font=(font_family, 12, 'bold'))
         label.pack()
         leftButton = Button(self.top, text='Turn Left',
-                      command=self.machine.strip.L,
+                      command=self.machine.stripe.L,
                       font=(font_family, 12, 'normal'))
         leftButton.pack(side='left')
         rightButton = Button(self.top, text='Turn Right',
-                      command=self.machine.strip.R,
+                      command=self.machine.stripe.R,
                       font=(font_family, 12, 'normal'))
         rightButton.pack(side='right')
         self.machine.bind("<Button-1>", onclick_handler)
@@ -57,26 +38,30 @@ class MachineGUI:
 
 
 class Machine(Canvas):
-    def __init__(self, top, linecolor, *args, number=42, **kwargs):
+    def __init__(self, top, linecolor, *args, **kwargs):
         Canvas.__init__(self, top, *args, **kwargs)
-        self.linecolor = linecolor
-        self.number = 42
-        self.strip = Strip(self, linecolor)
+        self.stripe = Stripe(self, linecolor) # making a stripe
+        # make a smart variable moved
         self.moved = IntVar()
-        self.moved.set(1)
-        self.compiled = None
-        self.code = None
-        self.state = 'q1'
+        self.moved.set(1) # set it equal to 1, '1' means that nothing is moving
+        self.code = None # stores code
+        self.compiled = None # stores compiled code
+        self.state = 'q1' # machine.state at the beginning
+        # display self.state under stripe
         self.stateT = self.create_text(210, 164, text=self.state,
                                        font=(font_family, 30), tag='machineState',
                                        fill=gray,
                                        activefill=lightgray)
 
     def open(self, source):
-        file = open(source, 'r')
+        '''open and compile code'''
+        file = open(source, 'r') # open code
+        # convert turing app code to dictionary (compile)
+        # using regular expression
         LINE = r"^[\s]*[.^\(]*\([\s]*([^\,\s]+)\,[\s]*(\d)[\s]*\)[\s]*->[\s]*\([\s]*([^\,\s]*)[\s]*\,[\s]*(\d)[\s]*,[\s]*([LRSlrs])[\s]*\).*$"
-        self.compiled = {}
+        self.compiled = {} # the dictionary
         import re
+        # get values from each line matching the pattern
         for i, line in enumerate(file, 1):
             match = re.match(LINE, line)
             if match:
@@ -87,28 +72,34 @@ class Machine(Canvas):
                 action = match.group(5)
                 #print(qInitial, vInitial,'->',qResult, vResult, action)
                 self.compiled[(qInitial, vInitial)] = (qResult, vResult, action)
+        # save code in a variable
         self.code = file.read()
         #print(self.compiled)
         file.close()
 
     def track(self):
+        '''get current value and state'''
         print(self.get, self.state)
 
     def action(self):
+        '''make a single move'''
         work = True
         # 210, 170
-        action = self.compiled[(self.state, self.strip.current.value)]
+        # obtain new values
+        action = self.compiled[(self.state, self.stripe.current.value)]
+        # 'unpack action'
         self.state = action[0]
-        self.itemconfig(self.stateT, text=self.state)
         value = action[1]
-        self.strip.valueChange(value)
-        move = action[2]
+        move = action[2]        
+        self.itemconfig(self.stateT, text=self.state) # display new state
+        self.stripe.valueChange(value) # change a value of current place
+        # what to do next:
         if move == 'L' or move == 'l':
-            self.strip.L()
+            self.stripe.L()
         elif move == 'R' or move == 'r':
-            self.strip.R()
+            self.stripe.R()
         elif move == 'S' or move == 's':
-            self.strip.S()
+            self.stripe.S()
             print('machine has stopped')
             work = False
         else:
@@ -117,13 +108,14 @@ class Machine(Canvas):
         return work
         
     def act(self):
+        '''act untill stop'''
         work = True
         while work:
             work = self.action()
         print('Done')
 
 
-class Strip:
+class Stripe:
     def __init__(self, machine, *args, display=5, **kwargs):
         linecolor = args[0]
         self.machine = machine
@@ -231,7 +223,7 @@ class Strip:
     def S(self):
         print('Machine encountered S')
 
-    def createStrip(self, inputNumbers):
+    def createstripe(self, inputNumbers):
         ''' Input might look like this: [63, 86, 12]'''
         current = self.createPlaceHere(None, None, 0)
         left = current
@@ -245,6 +237,8 @@ class Strip:
             emptyPlace = self.createPlaceHere(left, None, 0)
             left = emptyPlace
         self.current = emptyPlace
+        for i in range(sum(inputNumbers)+2*len(inputNumbers)-1):
+            self.L()
 
     def moveCarefuly(self, thing, dx, dy):
         coordsX, coordsY, m1, m2 = self.machine.coords(thing)
@@ -290,8 +284,8 @@ class Strip:
 
 
 class Place:
-    def __init__(self, strip, value, left, right, *args):
-        self.strip = strip
+    def __init__(self, stripe, value, left, right, *args):
+        self.stripe = stripe
         self.value = value
         self.left = left
         self.right = right
@@ -303,13 +297,40 @@ class Place:
     def __str__(self):
         return str(self.value)
 
+def _sign(val):
+    '''signum(val)'''
+    if val > 0:
+        sign = 1
+    elif val == 0:
+        sign = 0
+    else:
+        sign = -1
+    return sign
 
-m = MachineGUI()
-m.machine.strip.createStrip([3, 4, 2])
-m.machine.open('app.turing')
-    # print('\n\n')
-    # print(machine.code)
-for i in range(12):
-    m.machine.strip.L()
+start = None # I use it to store coords from click_handler
+
+def onclick_handler(event):
+    ''' I call this function when I click on canvas'''
+    global start
+    start = (event.x, event.y)
+    print(start)
+
+def onrelease_handler(event):
+    ''' I call this function when I release click on canvas'''
+    global start
+    if start is not None:
+        x = start[0]
+        y = start[1]
+        event.widget.create_rectangle(x, y, event.x, event.y)
+        start = None
+
+
+# main part
+m = MachineGUI() # create a MachineGUI instance -> creating window and UI
+# provide input values
+m.machine.stripe.createstripe([3,2,1]) # fill the stripe with numbers in array
+# open and compile code
+m.machine.open('apptest1.turing') 
+# run machine
 m.machine.act()
 mainloop()
