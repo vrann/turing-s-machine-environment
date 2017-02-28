@@ -1,6 +1,6 @@
 # clear and consice
 # imorting modules
-from tkinter import *
+import tkinter as tk
 import inspect
 # design
 font_family = 'Lucida Grande' # app typeface
@@ -10,26 +10,68 @@ gray = '#97ACB3'
 lightgray = '#f6f6f6'
 canvas_size = 400 # size of canvas area
 
+class Navbar(tk.Frame):
+    pass
+class Toolbar(tk.Frame):
+    pass
+class Statusbar(tk.Frame):
+    pass
+class Main(tk.Frame):
+    pass
+
+class MainApplication(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+##        self.statusbar = Statusbar(self, ...)
+##        self.toolbar = Toolbar(self, ...)
+##        self.navbar = Navbar(self, ...)
+##        self.main = Main(self, ...)
+##
+##        self.statusbar.pack(side="bottom", fill="x")
+##        self.toolbar.pack(side="top", fill="x")
+##        self.navbar.pack(side="left", fill="y")
+##        self.main.pack(side="right", fill="both", expand=True)
+        # main part
+        self.test = tk.Label(self, text='tesst')
+        self.test.pack()
+        self.m = MachineGUI(self) # create a MachineGUI instance -> creating window and UI
+        b = tk.Button(self, text='Act!',
+                      command=self.create_stuff,
+                      font=(font_family, 12, 'normal'))
+        b.pack(side='right')
+        def additional_window():
+            window = tk.Tk()
+            l = tk.Label(window, text='new window')
+            l.pack()
+        
+    def create_stuff(self):
+        # provide input values
+        frame.m.machine.stripe.createstripe([3,2,1]) # fill the stripe with numbers in array
+        # open and compile code
+        frame.m.machine.open('apptest1.turing') 
+        # run machine
+        frame.m.machine.act()
+
 class MachineGUI:
-    def __init__(self):
-        # make window
-        self.top = Tk(screenName='The Turing\'s machine',baseName='Machine', className=' Visual Turing',)
+    def __init__(self, root):
         # create canvas
-        self.machine = Machine(self.top, 'white', width=420, height=210, bg='darkgreen', bd=0, highlightthickness=0)
+        self.root = root
+        self.machine = Machine(self.root, 'white', width=420, height=210, bg='darkgreen', bd=0, highlightthickness=0)
         self.machine.pack()
         # make buttons and labels
         self._make_controls()
 
     def _make_controls(self):
-        label = Label(self.top, text = 'Turing\'s Machine', font=(font_family, 20, 'normal'))
+        label = tk.Label(self.root, text = 'Turing\'s Machine', font=(font_family, 20, 'normal'))
         label.pack()
-        label = Label(self.top, text = 'Industrial version', font=(font_family, 12, 'bold'))
+        label = tk.Label(self.root, text = 'Industrial version', font=(font_family, 12, 'bold'))
         label.pack()
-        leftButton = Button(self.top, text='Turn Left',
+        leftButton = tk.Button(self.root, text='Turn Left',
                       command=self.machine.stripe.L,
                       font=(font_family, 12, 'normal'))
         leftButton.pack(side='left')
-        rightButton = Button(self.top, text='Turn Right',
+        rightButton = tk.Button(self.root, text='Turn Right',
                       command=self.machine.stripe.R,
                       font=(font_family, 12, 'normal'))
         rightButton.pack(side='right')
@@ -37,12 +79,12 @@ class MachineGUI:
         self.machine.bind("<ButtonRelease-1>", onrelease_handler)
 
 
-class Machine(Canvas):
+class Machine(tk.Canvas):
     def __init__(self, top, linecolor, *args, **kwargs):
-        Canvas.__init__(self, top, *args, **kwargs)
+        tk.Canvas.__init__(self, top, *args, **kwargs)
         self.stripe = Stripe(self, linecolor) # making a stripe
         # make a smart variable moved
-        self.moved = IntVar()
+        self.moved = tk.IntVar()
         self.moved.set(1) # set it equal to 1, '1' means that nothing is moving
         self.code = None # stores code
         self.compiled = None # stores compiled code
@@ -324,13 +366,8 @@ def onrelease_handler(event):
         event.widget.create_rectangle(x, y, event.x, event.y)
         start = None
 
-
-# main part
-m = MachineGUI() # create a MachineGUI instance -> creating window and UI
-# provide input values
-m.machine.stripe.createstripe([3,2,1]) # fill the stripe with numbers in array
-# open and compile code
-m.machine.open('apptest1.turing') 
-# run machine
-m.machine.act()
-mainloop()
+if __name__ == "__main__":
+    root = tk.Tk(screenName='The Turing\'s machine',baseName='Machine', className=' Visual Turing',) #main window
+    frame = MainApplication(root)
+    frame.pack(side="top", fill="both", expand=True)
+    root.mainloop()
