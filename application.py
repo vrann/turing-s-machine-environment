@@ -212,6 +212,7 @@ class Stripe:
         self.display = display
         self.machine.create_line(20, 20, 780, 20, fill=linecolor)
         self.machine.create_line(20, 190, 780, 190, fill=linecolor)
+        self.machine.create_rectangle(175,145,245,150, fill='green')
         self.current = None
         self.animate = True
 
