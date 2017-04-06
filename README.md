@@ -30,7 +30,13 @@ I am not a copyright lawyer.
 
 Found a way to update repo from phone
 
-BETA 6 IS OUT!
+# BETA 6 IS OUT!
+## To Do
+I would like to thead some parts of app.
+> It updates every 1 second. So when graphics is updating, application is freezing. Therefore I want to **thread** it.
+```python
+import thread
+```
 
 # Motivation
 
