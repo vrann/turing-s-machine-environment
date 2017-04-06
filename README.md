@@ -47,6 +47,7 @@ Example 2: We have some long-long Turing application. And we have some another s
 Example 3: There is a collection of pairs like (input value, output value), and questions:
   1. Is it possible to develop a Turing application that from each 'input value' produces desired 'output value'?
   2. How small may it be? 
-  3*. 
+  3*. Can we teach AI to write Turing apps by examining such pairs?
  
 Example 4: If we would like to reduce length of some Turing app, how small can we make it?
+
