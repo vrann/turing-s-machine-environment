@@ -20,9 +20,8 @@
 ##  This is BETA 6 of this application.
 
 
-# version 4.0
-# Design PRO
-# import core # has machine itself
+# version beta 7.0
+# Design
 import Design # design has fonts colors end UI elements
 
 Window = Design.Window()
@@ -40,4 +39,8 @@ RunBar.displayInstructions()
 
 TuringMachineFrame = Design.TuringMachineFrame()
 TuringMachineFrame.pack()
+
+Design.mainloop()
+
+# Copyright = Design.Copyright()
 

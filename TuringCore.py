@@ -19,10 +19,11 @@
 ##
 ##  This is BETA 6 of this application.
 
+
 # clear and consice
 import tkinter as tk
 from Utilities import sign, compile_turing_code, open_file
-canvas_width = 420 # size of canvas area
+from Design import width # size of canvas area
 
 class TuringMachine(tk.Frame):
     ''' visualize machine + controls'''
@@ -30,7 +31,8 @@ class TuringMachine(tk.Frame):
         tk.Frame.__init__(self, *args, **kwargs)
 
         # visualize machine
-        self.machine = Machine(self, 'white', width=canvas_width, height=210, bd=0, highlightthickness=0)
+        self.machine = Machine(self, 'white', width=width,
+                               height=210, bd=0, highlightthickness=0)
         self.machine.pack()
         
         # controls
@@ -38,15 +40,14 @@ class TuringMachine(tk.Frame):
 
     def _make_controls(self):
         ''' creates labels, buttons etc'''
-        b = tk.Button(self, text='Act!',
-                      command=self.machine.create_and_act)
-        b.pack(side='right')
-        leftButton = tk.Button(self, text='Turn Left',
+        f = tk.Frame(self, width=44)
+        leftButton = tk.Button(f, text='Turn Left',
                       command=self.machine.stripe.L)
         leftButton.pack(side='left')
-        rightButton = tk.Button(self, text='Turn Right',
+        rightButton = tk.Button(f, text='Turn Right',
                       command=self.machine.stripe.R)
         rightButton.pack(side='right')
+        f.pack()
         
 
 class Machine(tk.Canvas):
@@ -71,10 +72,11 @@ class Machine(tk.Canvas):
         
         self.state = 'q1' # machine.state at the beginning
         # display self.state under stripe
-        self.stateT = self.create_text(210, 164, text=self.state,
+        self.stateT = self.create_text(width/2, 178, text=self.state,
                                        tag='machineState',
                                        fill='gray',
-                                       activefill='darkgray')
+                                       activefill='darkgray',
+                                       font=('Helvetica', 24, 'normal'))
 
     def act(self):
         '''act untill stop'''
@@ -90,6 +92,15 @@ class Machine(tk.Canvas):
     def open(self, source):
         '''open and compile code'''
         self.compiled = compile_turing_code(source)
+
+    def codepath(self, codepath):
+        self.codepath = codepath
+
+    def values(self, values):
+        self.values = values
+
+    def __str__(self):
+        return 'it\'s a machine'
 
     def _action(self):
         '''make a single move'''
@@ -119,29 +130,25 @@ class Machine(tk.Canvas):
 
     def create_and_act(self):
         # provide input values
-        self.values = '3 4'
-        self.codepath = '/Users/argoniton/Desktop/addtiton of 2 numbers.turing'
-
-        print(self.running.get())
-        if not self.running.get():
-            self.stripe.createstripe(self.values) # fill the stripe with numbers in array
-            # open and compile code
-            if not self.codepath:
-                appname = open_file()
-                self.open(appname)
-                print(appname)
+#       self.values = '3 4'
+#       self.codepath = '/Users/argoniton/Desktop/addtiton of 2 numbers.turing'
+        print(self.values)
+        if self.values!=None and self.compiled!=None:
+            if self.running.get()==0:
+                self.stripe.createstripe(self.values) # fill the stripe                  
+                # run machine
+                self.act()
             else:
-                if not self.compiled:
-                    self.open(self.codepath)                   
-        # run machine
-        self.act()
+                print('you should wait untill machine stops')
+        else:
+            print('you are missing some arguments')
 
 
 class Stripe:
     def __init__(self, machine):
         self.machine = machine
         self.current = None
-        self.animate = False
+        self.animate = True
 
     def valueChange(self, value):
         self.current.value = value
@@ -151,8 +158,11 @@ class Stripe:
         self.machine.itemconfig(rect_id, fill='darkgray')
         
     def makePlaceAtCenter(self, value):
-        returnPlace1 = self.machine.create_rectangle(175,70,245,140, fill='gray', tag='place'),                    
-        returnPlace2 = self.machine.create_text(210, 105, text=str(value), tag='place')
+        returnPlace1 = self.machine.create_rectangle(175,70,245,140,fill='gray',
+                                                     tag='place', width=0)                    
+        returnPlace2 = self.machine.create_text(210, 105, fill='#e9e9e9',
+                                                text=str(value), tag='place',
+                                                font=('Helvetica', 24, 'normal'))
         return returnPlace1, returnPlace2
 
     def createNewPlace(self, value):
@@ -183,7 +193,6 @@ class Stripe:
             right.left = place
             place.visual = self.makePlaceAtCenter(value)
         self.current = place
-        # print('place has been made',place.value, place.left, place.right)
         return place
 
     def moveL(self):
@@ -223,6 +232,8 @@ class Stripe:
 
         inputNumbers = [int(a) for a in inputNumbers.split()]
         print(inputNumbers)
+
+        self.machine.create_rectangle(175,145,245,150, fill='#e0e0e0', width=0)
         
         current = self.createNewPlace(0)
         left = current
@@ -245,44 +256,43 @@ class Stripe:
 
     def moveCarefuly(self, thing, dx, dy):
         coordsX, coordsY, m1, m2 = self.machine.coords(thing)
-        if (dx != 0 or dy != 0): # є що і куди переміщувати
-            if self.animate: # якщо пересувати повільно
-                # встановити зсув на 1 крок рівним 1, 0 або -1
-                # у залежності від dx, dy
+        if (dx != 0 or dy != 0): # if we need to move
+            if self.animate: # if animation should be slow
+                # sins of dx, dy; alternatively moving direction
                 ddx = sign(dx)
                 ddy = sign(dy)
-                # обчислити фінальні координати
+                # calculate final coords
                 xfinal = coordsX + dx
                 yfinal = coordsY + dy
-                # запустити анімацію пересування
+                # run animation
                 self.machine.moving.set(1)
                 self._movestep(thing, ddx, ddy, xfinal, yfinal)
-                # очікувати зміни значення self.moving
+                # waiting for self.moving to change
                 self.machine.wait_variable(self.machine.moving)
             else:
-                # пересунути одразу на dx, dy
+                # move straight on dx, dy
                 self.machine.move(thing, dx, dy)
 
     def _movestep(self, thing, ddx, ddy, xfinal, yfinal):
-        '''Зробити 1 крок для "повільного" пересування об'єкту.
+        '''make 1 step or one pixel step
 
-           id - номер об'єкту,
-           ddx, ddy - кроки по x, y,
-           xfinal, yfinal - кінцеві координати лівого верхнього кута
+           id - number of obj
+           ddx, ddy - projections of step on x, y,
+           xfinal, yfinal - final position
         '''
-        x, y, mx, my = self.machine.coords(thing) # отримати поточні координати
-        # обчислити нові значення ddx, ddy
+        x, y, mx, my = self.machine.coords(thing) # get current coordinates
+        # calculate ddx, ddy
         if x == xfinal:
             ddx = 0
         if y == yfinal:
             ddy = 0
-        if ddx or ddy: # якщо не дійшли до кінця
-            self.machine.move(thing, ddx, ddy) # перемістити об'єкт
-            # встановити виклик переміщення на наступний крок
-            # через 5 мілісекунд
-            self.machine.after(1, self._movestep, thing, ddx, ddy, xfinal, yfinal)
+        if ddx or ddy: # if we have not reach
+            self.machine.move(thing, ddx, ddy) # move obj
+            # after 1 mili sec
+            self.machine.after(1, self._movestep, thing, ddx, ddy,
+                               xfinal, yfinal)
         else:
-            # змінити self.moving, щоб зафіксувати завершення переміщення
+            # cange self.moving, to declare of moving
             self.machine.moving.set(0)
 
 
@@ -305,3 +315,4 @@ if __name__ == "__main__":
     frame.pack()
     root.mainloop()
     print('app is closed')
+

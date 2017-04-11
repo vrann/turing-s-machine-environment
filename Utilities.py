@@ -35,31 +35,35 @@ def sign(val):
     return sign
 
 def compile_turing_code(path):
-    file = open(path, 'r') # open code
-    # convert turing app code to dictionary (compile)
-    # using regular expression
-    LINE = r"^[\s]*[.^\(]*\([\s]*([^\,\s]+)\,[\s]*(\d)[\s]*\)[\s]*->[\s]*\([\s]*([^\,\s]*)[\s]*\,[\s]*(\d)[\s]*,[\s]*([LRSlrs])[\s]*\).*$"
-    compiled = {} # the dictionary
-    # get values from each line matching the pattern
-    for i, line in enumerate(file, 1):
-        # check whether or  not the line matches pattern
-        match = re.match(LINE, line)
-        if match: # if yes, parse values into variables
-            qInitial = match.group(1)
-            vInitial = int(match.group(2))
-            qResult = match.group(3)
-            vResult = int(match.group(4))
-            action = match.group(5)
-            # print(qInitial, vInitial,'->',qResult, vResult, action)
-            # add keyword and corresponding values into dictionary
-            compiled[(qInitial, vInitial)] = (qResult, vResult, action)
-    # save code in a variable
-    # code = file.read()
-    # print(compiled)
-    file.close()
+    try:
+        file = open(path, 'r') # open code
+        # convert turing app code to dictionary (compile)
+        # using regular expression
+        LINE = r"^[\s]*[.^\(]*\([\s]*([^\,\s]+)\,[\s]*(\d)[\s]*\)[\s]*->[\s]"\
+        "*\([\s]*([^\,\s]*)[\s]*\,[\s]*(\d)[\s]*,[\s]*([LRSlrs])[\s]*\).*$"
+        compiled = {} # the dictionary
+        # get values from each line matching the pattern
+        for i, line in enumerate(file, 1):
+            # check whether or  not the line matches pattern
+            match = re.match(LINE, line)
+            if match: # if yes, parse values into variables
+                qInitial = match.group(1)
+                vInitial = int(match.group(2))
+                qResult = match.group(3)
+                vResult = int(match.group(4))
+                action = match.group(5)
+                # print(qInitial, vInitial,'->',qResult, vResult, action)
+                # add keyword and corresponding values into dictionary
+                compiled[(qInitial, vInitial)] = (qResult, vResult, action)
+        # save code in a variable
+        # code = file.read()
+        # print(compiled)
+        file.close()
+    except FileNotFoundError:
+        compiled = None
+        print('file not found')
     return compiled
 
 def open_file():
     return askopenfilename()
-
 

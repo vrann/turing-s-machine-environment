@@ -21,17 +21,23 @@
 
 
 # design
+
 import tkinter as tk
 from EventHandler import register, InterfaceClick
 width = 640
+
 # colors:
 specific = '#00BAB9'
 primary = '#404099'
+
 # define main window
 top = None
 class Window(tk.Tk):
     def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.__init__(self, *args,
+                       screenName='The Turing\'s machine',
+                       baseName='Machine', className=' Visual Turing (BETA 7)',
+                       **kwargs)
         global top
         top = self
 
@@ -46,10 +52,24 @@ class StatusBar(tk.Canvas):
                            highlightthickness=0,bd=0,
                            **kwargs)
         c = self
-        indicators = []
+        self.indicators = []
         for i in range(3):
-            indicators.append(c.create_oval(30+i*25,5,45+i*25,20, fill=primary, outline=primary, width=0))
-        c.itemconfig(indicators[1], fill='gray', outline=primary, width=0)
+            self.indicators.append(c.create_oval(
+                30+i*25,5,45+i*25,20, fill='gray', outline=primary, width=0))
+        def StatusBarClick(event):
+            ''' I call this function when I click on StatusBar'''
+            InterfaceClick(panel_name='StatusBar',
+                           click_coords={'x':event.x,'y':event.y})
+        c.bind("<Button-1>", StatusBarClick)
+    def changeStatus(self, indi, status):
+        if status=='not ready':
+            self.itemconfig(self.indicators[indi-1], fill='gray',
+                            outline=primary, width=0)
+        elif status=='ready':
+            self.itemconfig(self.indicators[indi-1], fill=primary,
+                    outline=primary, width=0)
+        else:
+            print('no such status',status)
 
 
 class SetupBar(tk.Canvas):
@@ -71,6 +91,7 @@ class SetupBar(tk.Canvas):
                            click_coords={'x':event.x,'y':event.y})
         c.bind("<Button-1>", SetupBarClick)
 
+
 class RunBar(tk.Canvas):
     height = 150
     def __init__(self, *args, **kwargs):
@@ -88,6 +109,7 @@ class RunBar(tk.Canvas):
             ''' I call this function when I click on RunBar'''
             InterfaceClick(panel_name='RunBar',
                            click_coords={'x':event.x,'y':event.y})
+        
         c.bind("<Button-1>", RunBarClick)
 
 
@@ -100,4 +122,12 @@ class TuringMachineFrame(tk.Frame):
         self.turingmachine = TuringMachine(self)
         self.turingmachine.pack()
         
+
+class Copyright(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args,className=' Notice', **kwargs)
+        tk.Label(self, text='Copyright (C) 2017 Artemii Yanushevskyi').pack()
+        print('Copyright (C) 2017 Artemii Yanushevskyi,\n   github.com/argoniton')
+
+mainloop = tk.mainloop
 
