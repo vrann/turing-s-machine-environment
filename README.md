@@ -40,7 +40,7 @@ import thread
 
 # Motivation
 
-## How it is relevant to artificial intelligence
+## How is it relevant to artificial intelligence
 
 Now my priority is to discover whether or not this project can be related to artificial intelligence.
 
